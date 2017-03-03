@@ -4,6 +4,8 @@
 
 var express = require('express');
 var app = express();
+var fortune = require('./lib/fortune');
+
 //Механизм шаблонизации страниц
 var handlebars = require('express-handlebars').create({defaultLayout: 'main'});
 app.engine('handlebars', handlebars.engine);
@@ -14,24 +16,23 @@ app.use(express.static(__dirname + '/public'));
 
 app.set('port', process.env.port || 3000);
 
+app.use(function (req, res, next) {
+    res.locals.showTests = app.get('env') !== 'production' && req.query.test === '1';
+    next();
+});
+
+//Routes
 //homepage
 app.get('/', function (req, res) {
     res.render('home');
 });
 
-var fortunes = [
-    "Победи свои страхи или они победят тебя",
-    "Рекам нужны истоки",
-    "Не бойся неведомого",
-    "Тебя ждет приятный сюрприз",
-    "Будь проще"
-];
-
 //about
 app.get('/about', function (req, res) {
-    var randomFortune = fortunes[Math.floor(Math.random()*fortunes.length)];
-    console.log('Предсказание: ' + randomFortune);
-    res.render('about', {fortune: randomFortune});
+    res.render('about', {
+        fortune: fortune.getFortune(),
+        pageTestScript: '/qa/tests-about.js'
+    });
 });
 
 //404 page
