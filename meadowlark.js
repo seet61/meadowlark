@@ -27,6 +27,19 @@ app.get('/', function (req, res) {
     res.render('home');
 });
 
+app.get('/tours/hood-river', function (req, res) {
+    res.render('tours/hood-river');
+});
+
+app.get('/tours/oregon-coast', function (req, res) {
+    res.render('tours/oregon-coast');
+});
+
+
+app.get('/tours/request-group-rate', function (req, res) {
+    res.render('tours/request-group-rate');
+});
+
 //about
 app.get('/about', function (req, res) {
     res.render('about', {
@@ -34,6 +47,7 @@ app.get('/about', function (req, res) {
         pageTestScript: '/qa/tests-about.js'
     });
 });
+
 
 //404 page
 app.use(function (req, res) {
@@ -49,5 +63,5 @@ app.use(function (err, req, res, next) {
 });
 
 app.listen(app.get('port'), function () {
-    console.log('Express запущен на http://localhost:' + app.get('port') + '; нажмите Ctrl-C для завершения')
+    console.log('Express запущен на http://localhost:' + app.get('port') + '; нажмите Ctrl-C для завершения');
 });
