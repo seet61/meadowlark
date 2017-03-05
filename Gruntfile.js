@@ -18,14 +18,16 @@ module.exports = function (grunt) {
             all: {src: 'qa/tests-*.js', options: {ui: 'tdd'}}
         },
         jshint: {
-            app: ['meadowlark.js', 'public/js/**/*js', 'lib/**/*js'],
-            qa: ['Gruntfile.js', 'public/qa/**/*js', 'qa/**/*js']
+            app: ['meadowlark.js', 'public/js/**/*.js', 'lib/**/*.js'],
+            qa: ['Gruntfile.js', 'public/qa/**/*.js', 'qa/**/*.js']
         },
         exec: {
-            //linkchek: {cmd: 'linkcheck http://localhost:3000' }
-        },
+            linkchek: {
+                cmd: 'linkcheck http://localhost:3000'
+            }
+        }
     });
 
     //Регистрируем задания
-    grunt.registerTask("default", ["cafemocha","jshint","exec"]);
+    grunt.registerTask("default", ["cafemocha","jshint"/*,"exec"*/]);
 };

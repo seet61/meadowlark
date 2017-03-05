@@ -41,6 +41,17 @@ app.get('/tours/request-group-rate', function (req, res) {
 });
 
 //about
+app.get('/headers', function (req, res) {
+    res.set('Content-Type', 'text/plain');
+    var s = '';
+    for (var name in req.headers) {
+        s += name + ': ' + req.header(name) + '\n';
+    }
+    res.send(s);
+});
+
+
+//about
 app.get('/about', function (req, res) {
     res.render('about', {
         fortune: fortune.getFortune(),
