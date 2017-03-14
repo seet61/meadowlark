@@ -7,14 +7,27 @@ var app = express();
 var fortune = require('./lib/fortune');
 
 //Механизм шаблонизации страниц
-var handlebars = require('express-handlebars').create({defaultLayout: 'main'});
+var handlebars = require('express-handlebars').create({
+    defaultLayout: 'main',
+    helpers: {
+        section: function (name, options) {
+            if (!this._sections) this._sections = {};
+            this._sections[name] = options.fn(this);
+            return null;
+        }
+    }
+});
 app.engine('handlebars', handlebars.engine);
 app.set('view engine', 'handlebars');
 
 //Статические файлы
 app.use(express.static(__dirname + '/public'));
 
+//Порт приложения
 app.set('port', process.env.port || 3000);
+
+//Парсер URL
+app.use(require('body-parser').urlencoded({ extended: true }));
 
 app.use(function (req, res, next) {
     res.locals.showTests = app.get('env') !== 'production' && req.query.test === '1';
@@ -27,6 +40,27 @@ app.get('/', function (req, res) {
     res.render('home');
 });
 
+//Запросы с форм
+app.get('/newsletter', function (req, res) {
+    //CSRF будет позже
+    res.render('newsletter', { csrf: 'CSRF token goes here' });
+});
+
+app.post('/process', function (req, res) {
+    console.log('Form (from query string): ' + req.query.form + ' ' + req.accepts('json.html'));
+    console.log('CSRF token (from hidden field): ' + req.query._csrf);
+    console.log('Name (from visible field): ' + req.body.name);
+    console.log('Email (from visible field): ' + req.body.email);
+    if (req.xhr || req.accepts('json.html')==='json'){
+        //если здесь возможна ошибка то отправляем {error: 'описание ошибки'}
+        res.send({ success: true });
+    } else {
+        //если была бы ошибка перенаправили на страинцу ошибки
+        res.redirect(303, '/thank-you');
+    }
+});
+
+//Туры
 app.get('/tours/hood-river', function (req, res) {
     res.render('tours/hood-river');
 });
@@ -49,6 +83,8 @@ app.get('/headers', function (req, res) {
     }
     res.send(s);
 });
+
+
 
 
 //about
