@@ -17,6 +17,10 @@ var handlebars = require('express-handlebars').create({
         }
     }
 });
+
+//Загрузка файлов
+var formidable = require('formidable');
+
 app.engine('handlebars', handlebars.engine);
 app.set('view engine', 'handlebars');
 
@@ -51,6 +55,7 @@ app.post('/process', function (req, res) {
     console.log('CSRF token (from hidden field): ' + req.query._csrf);
     console.log('Name (from visible field): ' + req.body.name);
     console.log('Email (from visible field): ' + req.body.email);
+    console.log(req.xhr + ' ' + req.accepts('json.html') + ' ' + req.accepts('json.html')==='json');
     if (req.xhr || req.accepts('json.html')==='json'){
         //если здесь возможна ошибка то отправляем {error: 'описание ошибки'}
         res.send({ success: true });
@@ -58,6 +63,28 @@ app.post('/process', function (req, res) {
         //если была бы ошибка перенаправили на страинцу ошибки
         res.redirect(303, '/thank-you');
     }
+});
+
+//Загрузка фоток
+app.get('/contest/vacation-photo', function (req, res) {
+    var now = new Date();
+    res.render('contest/vacation-photo', {
+        year: now.getFullYear(), month: now.getMonth()
+    });
+});
+
+app.post('/contest/vacation-photo/:year/:month', function (req, res) {
+    var form = new formidable.IncomingForm();
+    form.parse(req, function(err, fields, files){
+        if (err) {
+            return res.redirect(303, '/error');
+        }
+        console.log('received fields: ');
+        console.log(fields);
+        console.log('received files: ');
+        console.log(files);
+        res.redirect(303, '/thank-you');
+    });
 });
 
 //Туры
