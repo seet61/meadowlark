@@ -38,16 +38,89 @@ app.use(function (req, res, next) {
     next();
 });
 
+//Credentials paremeters
+var credentilas = require('./credentials');
+
+//Use cookie
+app.use(require('cookie-parser')(credentilas.cookieSecret));
+//Use express-session
+app.use(require('express-session')({
+    resave: false,
+    saveUninitialized: false,
+    secret: credentilas.cookieSecret,
+}));
+
+//Flash
+app.use(function (req, res, next) {
+    //Если есть экстренное сообщение поместим его в контекст, а после удалим.
+    res.locals.flash = req.session.flash;
+    delete req.session.flash;
+    next();
+});
+
+
 //Routes
 //homepage
 app.get('/', function (req, res) {
     res.render('home');
 });
 
+//Немного измененная официальная версия регулярки для валидности почты
+var VALID_EMAIL_REGEX = new RegExp('^[a-zA-Z0-9.!#$%&\'\*+\/=?^_`{|}~-]+@' +
+'[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$');
+
 //Запросы с форм
 app.get('/newsletter', function (req, res) {
     //CSRF будет позже
     res.render('newsletter', { csrf: 'CSRF token goes here' });
+});
+
+app.post('/newsletter', function (req, res) {
+    var name = req.body.name || '', email = req.body.email || '';
+    console.log('Newsletter sign: ' + name + ' ' + email);
+    //Проверка вводимых данных
+    if (!email.match(VALID_EMAIL_REGEX)) {
+        console.log('Некорректный адрес электронной почты');
+        if (req.xhr) {
+            return res.json({ error: 'Некорректный адрес электронной почты' });
+        }
+        req.session.flash = {
+            type: 'danger',
+            intro: 'Ошибка проверки!',
+            message: 'Введенный вами адрес элетронной почты некорретный',
+        };
+    } else {
+        req.session.flash = {
+            type: 'success',
+            intro: 'Спасибо!',
+            message: 'Подписка оформлена.',
+        };
+    }
+    return res.redirect(303, '/newsletter');
+
+    //NewsletterSignup - пример объекта
+    /*new NewsletterSignup({ name: name, email:email }).save(function (err) {
+        if (err) {
+            if (req.xhr) {
+                return res.json({ error: 'Ошибка базы данных!!!' });
+            }
+            req.session.flash = {
+                type: 'danger',
+                intro: 'Ошибка проверки!',
+                message: 'Произошла ошибка база данныхю Пожалуйста, попробуйте позже.',
+            }
+            return res.redirect(303, '/newsletter/archive');
+        }
+        if (req.xhr) {
+            return res.json({ success: true});
+        }
+        req.session.flash = {
+            type: 'success',
+            intro: 'Спасибо!',
+            message: 'Подписка оформлена.',
+        }
+        return res.redirect(303, '/newsletter/archive');
+    });*/
 });
 
 app.post('/process', function (req, res) {
@@ -68,12 +141,14 @@ app.post('/process', function (req, res) {
 //Загрузка фоток
 app.get('/contest/vacation-photo', function (req, res) {
     var now = new Date();
+    res.cookie('vacation_photo', 'vacation_photo_cookie');
     res.render('contest/vacation-photo', {
         year: now.getFullYear(), month: now.getMonth()
     });
 });
 
 app.post('/contest/vacation-photo/:year/:month', function (req, res) {
+    console.log('cookie: ' + req.cookies.vacation_photo);
     var form = new formidable.IncomingForm();
     form.parse(req, function(err, fields, files){
         if (err) {
@@ -101,7 +176,7 @@ app.get('/tours/request-group-rate', function (req, res) {
     res.render('tours/request-group-rate');
 });
 
-//about
+//headers
 app.get('/headers', function (req, res) {
     res.set('Content-Type', 'text/plain');
     var s = '';

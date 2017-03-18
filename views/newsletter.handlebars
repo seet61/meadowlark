@@ -24,7 +24,9 @@
 -->
 
 <div class="formContainer">
-    <form class="form-horizontal newsletterForm" role="form" action="/process?form=newsletter_ajax" method="post">
+    <form class="form-horizontal newsletterForm" role="form"
+    action="/newsletter" method="post">
+    <!--action="/process?form=newsletter_ajax"-->
         <input type="hidden" name="_csrf" value="{{csrf}}">
         <div class="form-group">
             <label for="fieldName" class="col-sm-2 control-label">Имя</label>
