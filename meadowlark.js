@@ -6,6 +6,20 @@ var express = require('express');
 var app = express();
 var fortune = require('./lib/fortune');
 
+//Логирование
+switch (app.get('env')) {
+    case 'development':
+        //сжатое многоцветное жерналирование для разработки
+        app.use(require('morgan')('dev'));
+        break;
+    case 'production':
+        //модуль express-logger, с ротацией через 24 часа
+        app.use(require('express-logger')({
+            path: __dirname + '/log/requests.log'
+        }));
+        break;
+}
+
 //Механизм шаблонизации страниц
 var handlebars = require('express-handlebars').create({
     defaultLayout: 'main',
@@ -58,6 +72,15 @@ app.use(function (req, res, next) {
     next();
 });
 
+
+//Идентификация исполнителя запроса
+app.use(function (req, res, next) {
+    var cluster = require('cluster');
+    if (cluster.isWorker) {
+        console.log('Исполнитель %d получил запрос', cluster.worker.id);
+    }
+    next();
+});
 
 //Routes
 //homepage
@@ -211,6 +234,16 @@ app.use(function (err, req, res, next) {
     res.render('500');
 });
 
-app.listen(app.get('port'), function () {
-    console.log('Express запущен на http://localhost:' + app.get('port') + '; нажмите Ctrl-C для завершения');
-});
+function startServer() {
+    app.listen(app.get('port'), function () {
+        console.log('Express запущено в режиме ' + app.get('env'));
+        console.log('Express запущен на http://localhost:' + app.get('port') + '; нажмите Ctrl-C для завершения');
+    });
+}
+if(require.main === module) {
+    //Приложение запускается непоcредственно
+    startServer();
+} else {
+    //Приложение импортируется как модуль
+    module.exports = startServer;
+}
