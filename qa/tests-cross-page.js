@@ -16,7 +16,7 @@ suite('Межстраничные тесты', function () {
         'должно заполняться поле реферера', function () {
        var referrer = 'http://localhost:3000/tours/hood-river';
        browser.visit(referrer, function () {
-          browser.clickLink('.requestsGroupRate', function () {
+          browser.clickLink('.requestGroupRate', function () {
              assert(browser.field('referrer').value === referrer);
              done();
           });
@@ -27,7 +27,7 @@ suite('Межстраничные тесты', function () {
         'должно заполняться поле реферера', function () {
         var referrer = 'http://localhost:3000/tours/oregon-coast';
         browser.visit(referrer, function () {
-            browser.clickLink('.requestsGroupRate', function () {
+            browser.clickLink('.requestGroupRate', function () {
                 assert(browser.field('referrer').value === referrer);
                 done();
             });

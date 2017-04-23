@@ -170,18 +170,42 @@ app.get('/contest/vacation-photo', function (req, res) {
     });
 });
 
+var fs = require('fs');
+//Проверяем существует ли каталог
+var dataDir = __dirname + '/data';
+var vacationPhotoDir = dataDir + '/vacation-photo';
+fs.existsSync(dataDir) || fs.mkdir(dataDir);
+fs.existsSync(vacationPhotoDir) || fs.mkdir(vacationPhotoDir);
+
+function saveContestEntry(contestName, email, year, month, photoPath){
+    //TODO ... добавим позже
+}
+
 app.post('/contest/vacation-photo/:year/:month', function (req, res) {
     console.log('cookie: ' + req.cookies.vacation_photo);
     var form = new formidable.IncomingForm();
     form.parse(req, function(err, fields, files){
         if (err) {
-            return res.redirect(303, '/error');
+            res.session.flash = {
+                type: 'danger',
+                intro: 'Упс!',
+                message: 'Во время обработки отправленной формы произошла ошика. ' +
+                    'Пожалуйста повторите еще раз.'
+            };
+            return res.redirect(303, '/contest/vacation-photo');
         }
-        console.log('received fields: ');
-        console.log(fields);
-        console.log('received files: ');
-        console.log(files);
-        res.redirect(303, '/thank-you');
+        var photo = files.photo;
+        var dir = vacationPhotoDir + '/' + Date.now();
+        var path = dir + '/' + photo.name;
+        fs.mkdirSync(dir);
+        fs.renameSync(photo.path, dir + '/' + photo.name);
+        saveContestEntry('vacation-photo', fields.email, req.params.year, req.params.month, path);
+        req.session.flash = {
+            type: 'success',
+            intro: 'Удачи!',
+            message: 'Вы стали участником конкурса.',
+        };
+        return res.redirect(303, '/contest/vacation-photo/entries');
     });
 });
 
@@ -209,9 +233,6 @@ app.get('/headers', function (req, res) {
     res.send(s);
 });
 
-
-
-
 //about
 app.get('/about', function (req, res) {
     res.render('about', {
@@ -220,6 +241,12 @@ app.get('/about', function (req, res) {
     });
 });
 
+//fake fail
+app.get('epic-fail', function (req, res) {
+   process.nextTick(function () {
+       throw new Error('Бабах!');
+   })
+});
 
 //404 page
 app.use(function (req, res) {

@@ -63,4 +63,7 @@ typings/
 #credentials
 ./credentials.js
 
+#data dir
+./data
+
 
