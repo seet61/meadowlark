@@ -32,6 +32,25 @@ var handlebars = require('express-handlebars').create({
     }
 });
 
+//db connect
+var mongoose = require('mongoose');
+var opts = {
+    server: {
+        secretOprions: {keepAlive: 1}
+    }
+};
+
+switch(app.get('env')){
+    case 'development':
+        mongoose.connect(credentilas.mongo.development.connectionString, opts);
+        break;
+    case 'production':
+        mongoose.connect(credentilas.mongo.production.connectionString, opts);
+        break;
+    default:
+        throw new Error('Неизвестная среда выполнения: ' + app.get('env'));
+}
+
 //Загрузка файлов
 var formidable = require('formidable');
 
