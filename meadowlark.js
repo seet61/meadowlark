@@ -33,6 +33,7 @@ var handlebars = require('express-handlebars').create({
 });
 
 //db connect
+/*
 var mongoose = require('mongoose');
 var opts = {
     server: {
@@ -49,7 +50,7 @@ switch(app.get('env')){
         break;
     default:
         throw new Error('Неизвестная среда выполнения: ' + app.get('env'));
-}
+}*/
 
 //Загрузка файлов
 var formidable = require('formidable');
